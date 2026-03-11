@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的動力管理員</title>
+    <style>
+        :root { --p: #6366f1; --s: #ec4899; --bg: #f8fafc; --text: #1e293b; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; color: var(--text); }
+        .header { background: linear-gradient(135deg, var(--p), #4338ca); color: white; padding: 25px 20px; text-align: center; border-radius: 0 0 25px 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .points-display { font-size: 14px; opacity: 0.9; margin-top: 5px; }
+        
+        .page { display: none; padding: 20px; animation: slideUp 0.3s ease; }
+        .active { display: block; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .card { background: white; padding: 18px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 15px; position: relative; }
+        .timer-display { font-size: 32px; font-weight: 800; color: var(--p); margin: 15px 0; font-family: monospace; }
+        
+        /* 表單與按鈕 */
+        .input-group { display: flex; gap: 8px; margin-bottom: 15px; }
+        input { flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 16px; }
+        button { border: none; padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-main { background: var(--p); color: white; }
+        .btn-start { background: #10b981; color: white; width: 100%; margin-bottom: 10px; font-size: 18px; }
+        .btn-stop { background: #f43f5e; color: white; width: 100%; font-size: 18px; }
+        .btn-del { background: #fee2e2; color: #ef4444; padding: 5px 10px; font-size: 12px; }
+
+        /* 列表樣式 */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .list-item:last-child { border-bottom: none; }
+        .item-content { flex: 1; cursor: pointer; }
+        .vision-quote { font-style: italic; border-left: 4px solid var(--s); padding-left: 12px; margin: 10px 0; }
+
+        /* 導航 */
+        .nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #e2e8f0; height: 70px; align-items: center; }
+        .nav-item { flex: 1; text-align: center; color: #94a3b8; font-size: 12px; text-decoration: none; }
+        .nav-item.active-nav { color: var(--p); font-weight: bold; }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1 id="page-title" style="margin:0; font-size: 22px;">目標管理</h1>
+    <div class="points-display">目前累積積分：<span id="total-points">0</span> pt</div>
+</div>
+
+<div id="target-page" class="page active">
+    <div class="card" style="text-align: center;">
+        <select id="task-select" style="width:100%; padding:10px; border-radius:8px; margin-bottom:10px;"></select>
+        <div class="timer-display" id="timer">00:00:00</div>
+        <button id="start-btn" class="btn-start" onclick="toggleTimer()">開始專注</button>
+    </div>
+    
+    <div class="card">
+        <h3>🎯 管理目標任務</h3>
+        <div class="input-group">
+            <input type="text" id="new-target" placeholder="新增目標 (如: 寫程式)">
+            <button class="btn-main" onclick="addItem('targets', 'new-target')">新增</button>
+        </div>
+        <div id="targets-list"></div>
+    </div>
+</div>
+
+<div id="reward-page" class="page">
+    <div class="card">
+        <h3>🎁 獎勵商店</h3>
+        <div class="input-group">
+            <input type="text" id="new-reward-name" placeholder="獎勵名稱">
+            <input type="number" id="new-reward-cost" placeholder="積分" style="width: 80px;">
+            <button class="btn-main" onclick="addReward()">新增</button>
+        </div>
+        <div id="rewards-list"></div>
+    </div>
+</div>
+
+<div id="vision-page" class="page">
+    <div class="card">
+        <h3>🔥 長期動力語錄</h3>
+        <div class="input-group">
+            <input type="text" id="new-vision" placeholder="寫下一句激勵自己的話">
+            <button class="btn-main" onclick="addItem('visions', 'new-vision')">新增</button>
+        </div>
+        <div id="visions-list"></div>
+    </div>
+</div>
+
+<nav class="nav">
+    <div class="nav-item active-nav" onclick="showPage('target', this)"><span class="nav-icon">⏱️</span>目標</div>
+    <div class="nav-item" onclick="showPage('reward', this)"><span class="nav-icon">💎</span>獎勵</div>
+    <div class="nav-item" onclick="showPage('vision', this)"><span class="nav-icon">🌈</span>動力</div>
+</nav>
+
+<script>
+    // 初始化資料
+    let db = JSON.parse(localStorage.getItem('motivationDB')) || {
+        points: 0,
+        targets: ["讀書", "運動", "工作"],
+        rewards: [{name: "看一集動畫", cost: 30}, {name: "喝珍奶", cost: 100}],
+        visions: ["我不想要五年後後悔", "為了更自由的生活"]
+    };
+
+    let timerInterval, startTime, isRunning = false;
+
+    // 存檔
+    function save() {
+        localStorage.setItem('motivationDB', JSON.stringify(db));
+        renderAll();
+    }
+
+    function showPage(pageId, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId + '-page').classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+        el.classList.add('active-nav');
+        document.getElementById('page-title').innerText = el.innerText.replace(/[^\u4e00-\u9fa5]/g, '');
+    }
+
+    // 通用新增 (針對簡單字串陣列)
+    function addItem(key, inputId) {
+        const val = document.getElementById(inputId).value.trim();
+        if(val) {
+            db[key].push(val);
+            document.getElementById(inputId).value = '';
+            save();
+        }
+    }
+
+    // 獎勵專用新增 (物件陣列)
+    function addReward() {
+        const name = document.getElementById('new-reward-name').value.trim();
+        const cost = parseInt(document.getElementById('new-reward-cost').value);
+        if(name && cost) {
+            db.rewards.push({name, cost});
+            document.getElementById('new-reward-name').value = '';
+            document.getElementById('new-reward-cost').value = '';
+            save();
+        }
+    }
+
+    function deleteItem(key, index) {
+        if(confirm('確定要刪除嗎？')) {
+            db[key].splice(index, 1);
+            save();
+        }
+    }
+
+    function editItem(key, index) {
+        let current = typeof db[key][index] === 'object' ? db[key][index].name : db[key][index];
+        let newVal = prompt('修改內容：', current);
+        if(newVal) {
+            if(typeof db[key][index] === 'object') db[key][index].name = newVal;
+            else db[key][index] = newVal;
+            save();
+        }
+    }
+
+    // 計時器邏輯
+    function toggleTimer() {
+        const btn = document.getElementById('start-btn');
+        if(!isRunning) {
+            startTime = new Date();
+            timerInterval = setInterval(updateTimer, 1000);
+            btn.innerText = "結束並結算";
+            btn.className = "btn-stop";
+            isRunning = true;
+        } else {
+            clearInterval(timerInterval);
+            const durationMinutes = Math.floor((new Date() - startTime) / 60000);
+            if(durationMinutes > 0) {
+                db.points += durationMinutes;
+                alert(`辛苦了！獲得 ${durationMinutes} 積分`);
+            }
+            document.getElementById('timer').innerText = "00:00:00";
+            btn.innerText = "開始專注";
+            btn.className = "btn-start";
+            isRunning = false;
+            save();
+        }
+    }
+
+    function updateTimer() {
+        const diff = new Date(new Date() - startTime);
+        const h = String(diff.getUTCHours()).padStart(2, '0');
+        const m = String(diff.getUTCMinutes()).padStart(2, '0');
+        const s = String(diff.getUTCSeconds()).padStart(2, '0');
+        document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+    }
+
+    // 渲染畫面
+    function renderAll() {
+        document.getElementById('total-points').innerText = db.points;
+
+        // 渲染目標下拉選單
+        const select = document.getElementById('task-select');
+        select.innerHTML = db.targets.map(t => `<option>${t}</option>`).join('');
+
+        // 渲染目標列表
+        document.getElementById('targets-list').innerHTML = db.targets.map((t, i) => `
+            <div class="list-item">
+                <span class="item-content" onclick="editItem('targets', ${i})">${t}</span>
+                <button class="btn-del" onclick="deleteItem('targets', ${i})">刪除</button>
+            </div>
+        `).join('');
+
+        // 渲染獎勵列表
+        document.getElementById('rewards-list').innerHTML = db.rewards.map((r, i) => `
+            <div class="list-item">
+                <div class="item-content" onclick="useReward(${i})">
+                    <strong>${r.name}</strong> <small>(${r.cost} pt)</small>
+                </div>
+                <div>
+                    <button style="background:#e2e8f0; font-size:12px;" onclick="editItem('rewards', ${i})">改名</button>
+                    <button class="btn-del" onclick="deleteItem('rewards', ${i})">刪除</button>
+                </div>
+            </div>
+        `).join('');
+
+        // 渲染動力列表
+        document.getElementById('visions-list').innerHTML = db.visions.map((v, i) => `
+            <div class="vision-quote">
+                <span class="item-content" onclick="editItem('visions', ${i})">${v}</span>
+                <button class="btn-del" style="float:right" onclick="deleteItem('visions', ${i})">刪除</button>
+            </div>
+        `).join('');
+    }
+
+    function useReward(index) {
+        const r = db.rewards[index];
+        if(db.points >= r.cost) {
+            if(confirm(`兌換「${r.name}」將扣除 ${r.cost} 積分，確定嗎？`)) {
+                db.points -= r.cost;
+                save();
+            }
+        } else {
+            alert('積分不足！再努力一下吧！');
+        }
+    }
+
+    renderAll();
+</script>
+</body>
+</html>
