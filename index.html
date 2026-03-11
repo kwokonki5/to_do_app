@@ -3,110 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的動力管理員</title>
+    <title>Chiikawa 努力日誌</title>
     <style>
-        :root { --p: #6366f1; --s: #ec4899; --bg: #f8fafc; --text: #1e293b; }
+        :root { 
+            --chiikawa-pink: #ffdae0; 
+            --hachiware-blue: #d0e7ff; 
+            --usagi-yellow: #fff4d0;
+            --text: #5a4a42;
+            --p: #ff9fb2;
+        }
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; color: var(--text); }
-        .header { background: linear-gradient(135deg, var(--p), #4338ca); color: white; padding: 25px 20px; text-align: center; border-radius: 0 0 25px 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .points-display { font-size: 14px; opacity: 0.9; margin-top: 5px; }
+        body { 
+            font-family: "Microsoft JhengHei", sans-serif; 
+            background: #fffafa; 
+            margin: 0; padding-bottom: 90px; color: var(--text);
+            background-image: radial-gradient(#ffe4e9 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .header { 
+            background: white; color: var(--p); padding: 15px; text-align: center; 
+            border-bottom: 5px solid var(--chiikawa-pink);
+        }
+        .chiikawa-img { width: 120px; display: block; margin: 0 auto 10px; border-radius: 10px; }
         
-        .page { display: none; padding: 20px; animation: slideUp 0.3s ease; }
+        .page { display: none; padding: 20px; animation: popIn 0.4s ease; }
         .active { display: block; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        .card { background: white; padding: 18px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 15px; position: relative; }
-        .timer-display { font-size: 32px; font-weight: 800; color: var(--p); margin: 15px 0; font-family: monospace; }
+        .card { 
+            background: white; padding: 18px; border-radius: 20px; 
+            border: 3px solid var(--chiikawa-pink); box-shadow: 0 5px 0 var(--chiikawa-pink);
+            margin-bottom: 20px; position: relative;
+        }
         
-        /* 表單與按鈕 */
-        .input-group { display: flex; gap: 8px; margin-bottom: 15px; }
-        input { flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 16px; }
-        button { border: none; padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-main { background: var(--p); color: white; }
-        .btn-start { background: #10b981; color: white; width: 100%; margin-bottom: 10px; font-size: 18px; }
-        .btn-stop { background: #f43f5e; color: white; width: 100%; font-size: 18px; }
-        .btn-del { background: #fee2e2; color: #ef4444; padding: 5px 10px; font-size: 12px; }
+        /* 進度條 */
+        .progress-container { background: #eee; border-radius: 10px; height: 12px; margin: 10px 0; overflow: hidden; border: 1px solid #ddd; }
+        .progress-bar { background: linear-gradient(90deg, var(--p), #ffc1cc); height: 100%; width: 0%; transition: width 0.5s ease; }
 
-        /* 列表樣式 */
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .list-item:last-child { border-bottom: none; }
-        .item-content { flex: 1; cursor: pointer; }
-        .vision-quote { font-style: italic; border-left: 4px solid var(--s); padding-left: 12px; margin: 10px 0; }
+        /* 按鈕與輸入 */
+        input, select { width: 100%; padding: 12px; border: 2px solid var(--hachiware-blue); border-radius: 12px; margin-bottom: 8px; }
+        button { border: none; padding: 12px; border-radius: 15px; font-weight: bold; cursor: pointer; }
+        .btn-start { background: var(--p); color: white; width: 100%; font-size: 18px; }
+        .btn-main { background: var(--hachiware-blue); color: #4a76a8; width: 100%; }
 
         /* 導航 */
-        .nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #e2e8f0; height: 70px; align-items: center; }
-        .nav-item { flex: 1; text-align: center; color: #94a3b8; font-size: 12px; text-decoration: none; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 3px solid var(--chiikawa-pink); height: 75px; align-items: center; z-index: 100; }
+        .nav-item { flex: 1; text-align: center; color: #d1b8b8; font-size: 12px; }
         .nav-item.active-nav { color: var(--p); font-weight: bold; }
-        .nav-icon { font-size: 20px; display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1 id="page-title" style="margin:0; font-size: 22px;">目標管理</h1>
-    <div class="points-display">目前累積積分：<span id="total-points">0</span> pt</div>
+    <div class="points-display">✨ 努力積分：<span id="total-points">0</span> pt</div>
 </div>
 
 <div id="target-page" class="page active">
-    <div class="card" style="text-align: center;">
-        <select id="task-select" style="width:100%; padding:10px; border-radius:8px; margin-bottom:10px;"></select>
-        <div class="timer-display" id="timer">00:00:00</div>
-        <button id="start-btn" class="btn-start" onclick="toggleTimer()">開始專注</button>
+    <img src="cheer.jpg" class="chiikawa-img" alt="加油！">
+    <div class="card">
+        <h3 style="text-align:center; color:#ff9fb2;">( ᐢ˙꒳˙ᐢ ) 專注討伐中</h3>
+        <select id="active-task-select"></select>
+        <div id="timer" style="font-size:40px; text-align:center; margin:10px; font-weight:bold; color:var(--p);">00:00:00</div>
+        <button id="timer-btn" class="btn-start" onclick="toggleTimer()">開始努力！</button>
     </div>
     
     <div class="card">
-        <h3>🎯 管理目標任務</h3>
-        <div class="input-group">
-            <input type="text" id="new-target" placeholder="新增目標 (如: 寫程式)">
-            <button class="btn-main" onclick="addItem('targets', 'new-target')">新增</button>
+        <h3>📝 目標設定</h3>
+        <input type="text" id="target-name" placeholder="目標名稱">
+        <div style="display:flex; gap:5px;">
+            <input type="number" id="target-min" placeholder="分鐘">
+            <input type="number" id="target-reward" placeholder="積分">
         </div>
-        <div id="targets-list"></div>
+        <button class="btn-main" onclick="addTarget()">加入計畫</button>
+        <div id="targets-list" style="margin-top:10px;"></div>
     </div>
 </div>
 
 <div id="reward-page" class="page">
+    <img src="stand.png" class="chiikawa-img" alt="獎勵！">
     <div class="card">
-        <h3>🎁 獎勵商店</h3>
-        <div class="input-group">
-            <input type="text" id="new-reward-name" placeholder="獎勵名稱">
-            <input type="number" id="new-reward-cost" placeholder="積分" style="width: 80px;">
-            <button class="btn-main" onclick="addReward()">新增</button>
-        </div>
-        <div id="rewards-list"></div>
+        <h3>🍭 獎勵商店</h3>
+        <input type="text" id="reward-name" placeholder="想給自己的獎勵">
+        <input type="number" id="reward-cost" placeholder="需要積分">
+        <button class="btn-main" onclick="addReward()" style="background:var(--usagi-yellow);">新增獎勵</button>
+        <div id="rewards-list" style="margin-top:10px;"></div>
+    </div>
+    <div class="card">
+        <h3 style="font-size:16px;">📜 兌換歷史</h3>
+        <div id="history-list" style="font-size:12px; color:#888; max-height:100px; overflow-y:auto;"></div>
     </div>
 </div>
 
 <div id="vision-page" class="page">
+    <img src="friends.png" class="chiikawa-img" alt="夢想！">
     <div class="card">
-        <h3>🔥 長期動力語錄</h3>
-        <div class="input-group">
-            <input type="text" id="new-vision" placeholder="寫下一句激勵自己的話">
-            <button class="btn-main" onclick="addItem('visions', 'new-vision')">新增</button>
-        </div>
-        <div id="visions-list"></div>
+        <h3>🌈 長期動力進度</h3>
+        <input type="text" id="vision-text" placeholder="你的夢想是？">
+        <button class="btn-main" onclick="addVision()" style="background:var(--chiikawa-pink);">寫下夢想</button>
+        <div id="visions-list" style="margin-top:10px;"></div>
     </div>
 </div>
 
 <nav class="nav">
-    <div class="nav-item active-nav" onclick="showPage('target', this)"><span class="nav-icon">⏱️</span>目標</div>
-    <div class="nav-item" onclick="showPage('reward', this)"><span class="nav-icon">💎</span>獎勵</div>
-    <div class="nav-item" onclick="showPage('vision', this)"><span class="nav-icon">🌈</span>動力</div>
+    <div class="nav-item active-nav" onclick="showPage('target', this)">🏃<br>努力</div>
+    <div class="nav-item" onclick="showPage('reward', this)">🍬<br>獎勵</div>
+    <div class="nav-item" onclick="showPage('vision', this)">✨<br>動力</div>
 </nav>
 
 <script>
-    // 初始化資料
-    let db = JSON.parse(localStorage.getItem('motivationDB')) || {
-        points: 0,
-        targets: ["讀書", "運動", "工作"],
-        rewards: [{name: "看一集動畫", cost: 30}, {name: "喝珍奶", cost: 100}],
-        visions: ["我不想要五年後後悔", "為了更自由的生活"]
+    // 資料結構與邏輯與之前相同，加上了進度條與歷史紀錄功能
+    let db = JSON.parse(localStorage.getItem('chiikawaDB_v3')) || {
+        points: 0, targets: [], rewards: [], visions: [], history: []
     };
 
     let timerInterval, startTime, isRunning = false;
 
-    // 存檔
     function save() {
-        localStorage.setItem('motivationDB', JSON.stringify(db));
+        localStorage.setItem('chiikawaDB_v3', JSON.stringify(db));
         renderAll();
     }
 
@@ -115,130 +128,81 @@
         document.getElementById(pageId + '-page').classList.add('active');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
         el.classList.add('active-nav');
-        document.getElementById('page-title').innerText = el.innerText.replace(/[^\u4e00-\u9fa5]/g, '');
     }
 
-    // 通用新增 (針對簡單字串陣列)
-    function addItem(key, inputId) {
-        const val = document.getElementById(inputId).value.trim();
-        if(val) {
-            db[key].push(val);
-            document.getElementById(inputId).value = '';
-            save();
-        }
+    function addTarget() {
+        const n = document.getElementById('target-name').value;
+        const m = parseInt(document.getElementById('target-min').value);
+        const r = parseInt(document.getElementById('target-reward').value);
+        if(n && m && r) { db.targets.push({name:n, min:m, reward:r}); save(); }
     }
 
-    // 獎勵專用新增 (物件陣列)
     function addReward() {
-        const name = document.getElementById('new-reward-name').value.trim();
-        const cost = parseInt(document.getElementById('new-reward-cost').value);
-        if(name && cost) {
-            db.rewards.push({name, cost});
-            document.getElementById('new-reward-name').value = '';
-            document.getElementById('new-reward-cost').value = '';
-            save();
-        }
+        const n = document.getElementById('reward-name').value;
+        const c = parseInt(document.getElementById('reward-cost').value);
+        if(n && c) { db.rewards.push({name:n, cost:c}); save(); }
     }
 
-    function deleteItem(key, index) {
-        if(confirm('確定要刪除嗎？')) {
-            db[key].splice(index, 1);
-            save();
-        }
+    function addVision() {
+        const t = document.getElementById('vision-text').value;
+        if(t) { db.visions.push({text:t, progress:0}); save(); }
     }
 
-    function editItem(key, index) {
-        let current = typeof db[key][index] === 'object' ? db[key][index].name : db[key][index];
-        let newVal = prompt('修改內容：', current);
-        if(newVal) {
-            if(typeof db[key][index] === 'object') db[key][index].name = newVal;
-            else db[key][index] = newVal;
-            save();
-        }
-    }
-
-    // 計時器邏輯
     function toggleTimer() {
-        const btn = document.getElementById('start-btn');
+        const btn = document.getElementById('timer-btn');
+        const task = db.targets[document.getElementById('active-task-select').value];
         if(!isRunning) {
+            if(!task) return alert("請先新增目標！");
             startTime = new Date();
-            timerInterval = setInterval(updateTimer, 1000);
-            btn.innerText = "結束並結算";
-            btn.className = "btn-stop";
+            timerInterval = setInterval(() => {
+                const diff = new Date(new Date() - startTime);
+                document.getElementById('timer').innerText = diff.getUTCHours().toString().padStart(2, '0') + ":" + diff.getUTCMinutes().toString().padStart(2, '0') + ":" + diff.getUTCSeconds().toString().padStart(2, '0');
+            }, 1000);
+            btn.innerText = "完成討伐！";
             isRunning = true;
         } else {
             clearInterval(timerInterval);
-            const durationMinutes = Math.floor((new Date() - startTime) / 60000);
-            if(durationMinutes > 0) {
-                db.points += durationMinutes;
-                alert(`辛苦了！獲得 ${durationMinutes} 積分`);
+            const min = (new Date() - startTime) / 60000;
+            let earned = 0;
+            if(min >= task.min) { 
+                earned = task.reward; 
+                db.visions.forEach(v => v.progress += (Math.random() * 0.009 + 0.001)); 
+            } else if(min >= 5) { 
+                earned = Math.floor(task.reward / 2); 
+                db.visions.forEach(v => v.progress += (Math.random() * 0.004 + 0.001));
             }
+            db.points += earned;
             document.getElementById('timer').innerText = "00:00:00";
-            btn.innerText = "開始專注";
-            btn.className = "btn-start";
+            btn.innerText = "開始努力！";
             isRunning = false;
             save();
+            alert(`獲得了 ${earned} 積分！`);
         }
     }
 
-    function updateTimer() {
-        const diff = new Date(new Date() - startTime);
-        const h = String(diff.getUTCHours()).padStart(2, '0');
-        const m = String(diff.getUTCMinutes()).padStart(2, '0');
-        const s = String(diff.getUTCSeconds()).padStart(2, '0');
-        document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+    function useReward(i) {
+        if(db.points >= db.rewards[i].cost) {
+            db.points -= db.rewards[i].cost;
+            db.history.unshift(`${new Date().toLocaleDateString()} 兌換了 ${db.rewards[i].name}`);
+            save();
+        } else { alert("積分不夠換唷..."); }
     }
 
-    // 渲染畫面
+    function deleteItem(key, i) { if(confirm('要刪除嗎？')) { db[key].splice(i, 1); save(); } }
+
     function renderAll() {
-        document.getElementById('total-points').innerText = db.points;
-
-        // 渲染目標下拉選單
-        const select = document.getElementById('task-select');
-        select.innerHTML = db.targets.map(t => `<option>${t}</option>`).join('');
-
-        // 渲染目標列表
-        document.getElementById('targets-list').innerHTML = db.targets.map((t, i) => `
-            <div class="list-item">
-                <span class="item-content" onclick="editItem('targets', ${i})">${t}</span>
-                <button class="btn-del" onclick="deleteItem('targets', ${i})">刪除</button>
-            </div>
-        `).join('');
-
-        // 渲染獎勵列表
-        document.getElementById('rewards-list').innerHTML = db.rewards.map((r, i) => `
-            <div class="list-item">
-                <div class="item-content" onclick="useReward(${i})">
-                    <strong>${r.name}</strong> <small>(${r.cost} pt)</small>
-                </div>
-                <div>
-                    <button style="background:#e2e8f0; font-size:12px;" onclick="editItem('rewards', ${i})">改名</button>
-                    <button class="btn-del" onclick="deleteItem('rewards', ${i})">刪除</button>
-                </div>
-            </div>
-        `).join('');
-
-        // 渲染動力列表
+        document.getElementById('total-points').innerText = Math.floor(db.points);
+        document.getElementById('active-task-select').innerHTML = db.targets.map((t, i) => `<option value="${i}">${t.name} (${t.min}分)</option>`).join('');
+        document.getElementById('targets-list').innerHTML = db.targets.map((t, i) => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px solid #eee; padding-bottom:3px;"><span>${t.name} (${t.reward}pt)</span><button onclick="deleteItem('targets', ${i})" style="background:none; color:red;">x</button></div>`).join('');
+        document.getElementById('rewards-list').innerHTML = db.rewards.map((r, i) => `<div style="margin-bottom:5px;"><button onclick="useReward(${i})" style="width:80%; text-align:left;">🎁 ${r.name} (${r.cost}pt)</button><button onclick="deleteItem('rewards', ${i})" style="width:15%; background:none;">x</button></div>`).join('');
+        document.getElementById('history-list').innerHTML = db.history.map(h => `<div>• ${h}</div>`).join('');
         document.getElementById('visions-list').innerHTML = db.visions.map((v, i) => `
-            <div class="vision-quote">
-                <span class="item-content" onclick="editItem('visions', ${i})">${v}</span>
-                <button class="btn-del" style="float:right" onclick="deleteItem('visions', ${i})">刪除</button>
-            </div>
-        `).join('');
+            <div style="margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; font-size:14px;"><strong>${v.text}</strong><span onclick="deleteItem('visions', ${i})" style="color:red; cursor:pointer;">x</span></div>
+                <div class="progress-container"><div class="progress-bar" style="width:${Math.min(100, v.progress)}%"></div></div>
+                <div style="font-size:10px; color:#aaa; text-align:right;">進度: ${v.progress.toFixed(4)}%</div>
+            </div>`).join('');
     }
-
-    function useReward(index) {
-        const r = db.rewards[index];
-        if(db.points >= r.cost) {
-            if(confirm(`兌換「${r.name}」將扣除 ${r.cost} 積分，確定嗎？`)) {
-                db.points -= r.cost;
-                save();
-            }
-        } else {
-            alert('積分不足！再努力一下吧！');
-        }
-    }
-
     renderAll();
 </script>
 </body>
